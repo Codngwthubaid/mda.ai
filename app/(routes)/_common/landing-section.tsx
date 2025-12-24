@@ -1,12 +1,26 @@
-"use client"
+"use client";
 
-import React, { useState } from 'react'
-import Header from './header'
-import PromptInput from '@/components/prompt-input'
-import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion'
+import React, { memo, useState } from "react";
+import { formatDistanceToNow } from "date-fns";
+import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
+import PromptInput from "@/components/prompt-input";
+import Header from "./header";
+// import { useCreateProject, useGetProjects } from "@/features/use-project";
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+import { Spinner } from "@/components/ui/spinner";
+import { ProjectType } from "@/types/project";
+import { useRouter } from "next/navigation";
+import { FolderOpenDotIcon } from "lucide-react";
 
 const LandingSection = () => {
-    const [promptText, setPromptText] = useState<string>('')
+    const { user } = useKindeBrowserClient();
+    const [promptText, setPromptText] = useState<string>("");
+    const userId = user?.id;
+
+    // const { data: projects, isLoading, isError } = useGetProjects(userId);
+    // const { mutate, isPending } = useCreateProject();
+
+
     const suggestions = [
         {
             label: "Finance Tracker",
@@ -95,16 +109,71 @@ const LandingSection = () => {
                         </div>
                     </div>
                 </div>
-                <div className='w-full py-10'>
-                    <div className='mx-auto max-w-3xl'>
-                        <div className='font-bold text-xl tracking-tight'>
-                            <h1>Recent Projects</h1>
-                        </div>
+                {/* <div className="w-full py-10">
+                    <div className="mx-auto max-w-3xl">
+                        {userId && (
+                            <div>
+                                <h1 className="font-medium text-xl tracking-tight"> Recent Projects</h1>
+
+                                {isLoading ? (
+                                    <div className="flex items-center justify-center py-2">
+                                        <Spinner className="size-10" />
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mt-3">
+                                        {projects?.map((project: ProjectType) => (
+                                            <ProjectCard key={project.id} project={project} />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {isError && <p className="text-red-500">Failed to load projects</p>}
                     </div>
-                </div>
+                </div> */}
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default LandingSection
+const ProjectCard = memo(({ project }: { project: ProjectType }) => {
+    const router = useRouter();
+    const createdAtDate = new Date(project.createdAt);
+    const timeAgo = formatDistanceToNow(createdAtDate, { addSuffix: true });
+    const thumbnail = project.thumbnail || null;
+
+    const onRoute = () => {
+        router.push(`/project/${project.id}`);
+    };
+
+    return (
+        <div
+            role="button"
+            className="w-full flex flex-col border rounded-xl cursor-pointer hover:shadow-md overflow-hidden"
+            onClick={onRoute}
+        >
+            <div className="h-40 bg-[#eee] relative overflow-hidden flex items-center justify-center">
+                {thumbnail ? (
+                    <img
+                        src={thumbnail}
+                        className="w-full h-full object-cover object-left scale-110"
+                    />
+                ) : (
+                    <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                        <FolderOpenDotIcon />
+                    </div>
+                )}
+            </div>
+
+            <div className="p-4 flex flex-col">
+                <h3 className="font-semibold text-sm truncate w-full mb-1 line-clamp-1">{project.name}</h3>
+                <p className="text-xs text-muted-foreground">{timeAgo}</p>
+            </div>
+        </div>
+    );
+});
+
+ProjectCard.displayName = "ProjectCard";
+
+export default LandingSection;
