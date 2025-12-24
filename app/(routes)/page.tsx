@@ -1,10 +1,9 @@
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
+"use client"
+
+import LandingSection from "./_common/landing-section";
 
 export default function Home() {
   return (
-    <Button>
-      click me
-    </Button>
+    <LandingSection />
   );
 }
