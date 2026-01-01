@@ -37,3 +37,37 @@ export async function POST(request: Request) {
     });
   }
 }
+
+
+export async function GET(request: Request) {
+  try {
+   
+    const session = await getKindeServerSession();
+    const user = await session?.getUser();
+    
+    if (!user) return new Response("Unauthorized", { status: 401 });
+
+    const userId = user.id;
+
+    const projects = await prisma.project.findMany({
+      where: {
+        userId: userId,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: projects,
+    });
+
+  } catch (error) {
+    console.error("Error in GET /api/project:", error);
+    return NextResponse.json({
+      error: "Failed to fetch projects",
+      status: 500,
+    });
+  }
+}
