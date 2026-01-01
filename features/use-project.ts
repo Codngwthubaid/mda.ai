@@ -27,6 +27,6 @@ export const useFetchProjects = (userId?: string | null) => {
       const response = await axios.get("/api/project");
       return response.data.data;
     },
-    enabled: !userId,
+    enabled: !!userId,
   });
 };
